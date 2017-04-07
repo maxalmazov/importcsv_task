@@ -28,4 +28,12 @@ class ErrorImport
     {
         return $this->message;
     }
+
+    /**
+     * @param mixed $message
+     */
+    public function setMessage($message)
+    {
+        $this->message = $message;
+    }
 }

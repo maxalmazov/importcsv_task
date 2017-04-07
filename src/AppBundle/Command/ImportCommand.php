@@ -64,10 +64,9 @@ class ImportCommand extends ContainerAwareCommand
             return;
         }
 
+        $import = $this->getContainer()->get('import.csv');
+        $import->import($reader, $writer, $output);
 
-        $uutil = $this->getContainer()->get('helper.utility');
-        $uutil->getConstraints();
-        $util2 = $this->getContainer()->get('import.csv');
-        $util2->import($reader, $writer);
+        $reportMessage = sprintf('Total Processed');
     }
 }

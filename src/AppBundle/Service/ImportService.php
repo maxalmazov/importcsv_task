@@ -13,6 +13,8 @@
  use Ddeboer\DataImport\Workflow\StepAggregator as Workflow;
  use Doctrine\ORM\EntityManager;
  use AppBundle\Entity\Product;
+ use function PHPSTORM_META\elementType;
+ use Symfony\Component\Console\Output\OutputInterface;
  use Symfony\Component\Validator\Constraints as Assert;
  use Symfony\Component\DependencyInjection\ContainerInterface as Container;
  use Symfony\Component\Validator\Validator\ValidatorInterface as Validator;
@@ -39,13 +41,13 @@
      private $helper;
 
      /**
-      * @var $errorImport ErrorImport
+      * @var $errorsImport ErrorImport
       */
-     private $errorImport = [];
+     private $errorsImport = [];
 
      private $totalProcessed;
 
-     private $successPrcessed;
+     private $successProcessed;
 
      /**
       * ImportService constructor.
@@ -60,7 +62,7 @@
          $this->helper = $helper;
      }
 
-     public function import(Reader $reader, Writer $writer)
+     public function import(Reader $reader, Writer $writer, $output)
      {
          $mapping = new MappingStep($this->helper->getMapping());
 
@@ -77,10 +79,11 @@
 
          $filter = new FilterStep();
          $priceAnStockfilter = function ($item) {
-             if ($item['price']<self::MIN_PRICE &&  $item['stock']<self::MIN_STOCK) {
+             if ($item['price']<self::MIN_PRICE && $item['stock']<self::MIN_STOCK) {
                  $message = 'Price < '.self::MIN_PRICE.' && stock < '.self::MIN_STOCK;
                  $error = new ErrorImport($item['productCode'], $message);
                  $this->setError($error);
+
                  return false;
              }
              return true;
@@ -95,14 +98,64 @@
              ->addStep($validate, 2)
              ->addStep($filter, 1)
              ->addWriter($writer)
-             ->process();
+             ->process($output);
          ;
+
+         $this->totalProcessed = $result->getTotalProcessedCount() + count($reader->getErrors());
+         $this->successProcessed = $result->getSuccessCount();
+
+         if ($result->hasErrors()) {
+             foreach ($result->getExceptions() as $exception) {
+                 foreach ($exception->getViolations() as $violation) {
+                     $error = new ErrorImport($violation->getRoot()['productCode'], $violation->getMessage());
+                     $this->setError($error);
+                 }
+             }
+         }
+
+
+
+         //var_dump($this->totalProcessed);
      }
 
      private function setError(ErrorImport $error)
      {
-         $this->errorImport[] = $error;
+         if ($this->isErrorExist($error) instanceof ErrorImport) {
+             $errorImport = $this->isErrorExist($error);
+             $newMessage = $errorImport->getMessage().' && '.$error->getMessage();
+             $errorImport->setMessage($newMessage);
+         } else {
+             $this->errorsImport[] = $error;
+         }
 
          return $this;
+     }
+
+     private function getTotalErrorParse()
+     {
+         $errorParse = [];
+
+         /**
+          * @var $error ErrorImport
+          */
+         foreach ($this->errorsImport as $error) {
+             $errorParse[$error->getProductCode()] = $error;
+         }
+
+         return count($errorParse);
+     }
+
+     private function isErrorExist($error)
+     {
+         /**
+          * @var $error ErrorImport
+          * @var $errorImport ErrorImport
+          */
+         foreach ($this->errorsImport as $errorImport) {
+             if ($errorImport->getProductCode() === $error->getProductCode()) {
+                 return $errorImport;
+             }
+         }
+         return false;
      }
  }
