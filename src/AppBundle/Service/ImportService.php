@@ -113,9 +113,10 @@
              }
          }
 
-
-
-         //var_dump($this->totalProcessed);
+         foreach ($reader->getErrors() as $invalidItem) {
+             $error = new ErrorImport($invalidItem[0],'Invalid item in CSV file');
+             $this->setError($error);
+         }
      }
 
      private function setError(ErrorImport $error)
@@ -131,20 +132,6 @@
          return $this;
      }
 
-     private function getTotalErrorParse()
-     {
-         $errorParse = [];
-
-         /**
-          * @var $error ErrorImport
-          */
-         foreach ($this->errorsImport as $error) {
-             $errorParse[$error->getProductCode()] = $error;
-         }
-
-         return count($errorParse);
-     }
-
      private function isErrorExist($error)
      {
          /**
@@ -157,5 +144,29 @@
              }
          }
          return false;
+     }
+
+     /**
+      * @return mixed
+      */
+     public function getTotalProcessed()
+     {
+         return $this->totalProcessed;
+     }
+
+     /**
+      * @return mixed
+      */
+     public function getSuccessProcessed()
+     {
+         return $this->successProcessed;
+     }
+
+     /**
+      * @return ErrorImport
+      */
+     public function getErrorsImport()
+     {
+         return $this->errorsImport;
      }
  }

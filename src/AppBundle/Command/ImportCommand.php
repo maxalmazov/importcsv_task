@@ -3,6 +3,7 @@
 namespace AppBundle\Command;
 
 use AppBundle\Exeption\FormatFileExeption;
+use AppBundle\Utility\ErrorImport;
 use AppBundle\Utility\HelperUtility;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,6 +24,7 @@ class ImportCommand extends ContainerAwareCommand
             ->setHelp('This command import CSV file to database')
             ->addArgument('filename', InputArgument::REQUIRED, 'The path to file.')
             ->addOption('test', null, InputOption::VALUE_NONE, 'Run test import without insert to database.')
+            ->addOption('detailed', null, InputOption::VALUE_NONE, 'Run with detailed report')
         ;
     }
 
@@ -67,6 +69,22 @@ class ImportCommand extends ContainerAwareCommand
         $import = $this->getContainer()->get('import.csv');
         $import->import($reader, $writer, $output);
 
-        $reportMessage = sprintf('Total Processed');
+        $reportMessage = sprintf("\n".'Total processed: <info>%s</info> product. Imported: <info>%s</info> product. Fail: <info>%s</info>',
+            $import->getTotalProcessed(),
+            $import->getSuccessProcessed(),
+            count($import->getErrorsImport())
+        );
+        $output->writeln($reportMessage);
+
+        /**
+         * @var $error ErrorImport
+         */
+        if ($input->getOption('detailed')) {
+            foreach ($import->getErrorsImport() as $error) {
+                $report = sprintf('<info>%s</info> - <comment>%s</comment>', $error->getProductCode(), $error->getMessage());
+                $output->writeln($report);
+            }
+
+        }
     }
 }
