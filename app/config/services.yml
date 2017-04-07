@@ -1,0 +1,13 @@
+# Learn more about services, parameters and containers at
+# http://symfony.com/doc/current/service_container.html
+parameters:
+    #parameter_name: value
+
+services:
+    import.csv:
+        class: AppBundle\Services\ImportCSV
+        arguments: ["@service_container", "@doctrine.orm.entity_manager"]
+
+    map.utility:
+        class: AppBundle\Utility\MappingUtility
+        arguments: ["@validator", "@service_container"]
