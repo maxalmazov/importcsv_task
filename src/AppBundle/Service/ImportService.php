@@ -60,7 +60,7 @@
          $this->helper = $helper;
      }
 
-     public function import(Reader $reader/*, Writer $writer*/)
+     public function import(Reader $reader, Writer $writer)
      {
          $mapping = new MappingStep($this->helper->getMapping());
 
@@ -71,7 +71,6 @@
          $validate->throwExceptions(true);
          foreach ($this->helper->getConstraints() as $attribute => $constraints) {
              foreach ($constraints as $constraint) {
-
                  $validate->add($attribute, $constraint);
              }
          }
@@ -89,13 +88,15 @@
          $filter->add($priceAnStockfilter);
 
          $workflow = new Workflow($reader);
-         /*$result = $workflow
-             ->addStep($mapping)
-             ->addStep($converter)
-             ->addStep($validate)
-             ->addStep($filter);*/
-         var_dump($workflow);
-
+         $workflow->setSkipItemOnFailure(true);
+         $result = $workflow
+             ->addStep($mapping, 4)
+             ->addStep($converter, 3)
+             ->addStep($validate, 2)
+             ->addStep($filter, 1)
+             ->addWriter($writer)
+             ->process();
+         ;
      }
 
      private function setError(ErrorImport $error)

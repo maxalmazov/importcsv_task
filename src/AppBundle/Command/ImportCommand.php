@@ -51,7 +51,9 @@ class ImportCommand extends ContainerAwareCommand
     {
         $filename = $input->getArgument('filename');
         try {
-            $reader = HelperUtility::getReader($filename);
+            $helper = $this->getContainer()->get('helper.utility');
+            $reader = $helper->getReader($filename);
+            $writer = $helper->getWriter($input);
         } catch (FormatFileExeption $e) {
             $output->writeln('<error>'.$e->getMessage().'</error>');
 
@@ -66,6 +68,6 @@ class ImportCommand extends ContainerAwareCommand
         $uutil = $this->getContainer()->get('helper.utility');
         $uutil->getConstraints();
         $util2 = $this->getContainer()->get('import.csv');
-        $util2->import($reader);
+        $util2->import($reader, $writer);
     }
 }

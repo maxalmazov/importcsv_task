@@ -15,28 +15,28 @@ use Symfony\Component\Validator\Validator\ValidatorInterface as Validator;
 class HelperUtility
 {
 
-    static $validator;
-    static $em;
+    private $validator;
+    private $em;
 
     /**
      * HelperUtility constructor.
      *
-     * @param $validator
-     * @param $em
+     * @param $validator Validator
+     * @param $em EntityManager
      */
     public function __construct(Validator $validator, EntityManager $em)
     {
-        self::$validator = $validator;
-        self::$em = $em;
+        $this->validator = $validator;
+        $this->em = $em;
     }
 
-    public static function getReader($filename)
+    public function getReader($filename)
     {
         $reader = null;
         $fileInfo = new \SplFileInfo($filename);
 
         if ($fileInfo->getExtension() === 'csv') {
-            $reader = self::getCsvReader($filename);
+            $reader = $this->getCsvReader($filename);
         } else {
             throw new FormatFileExeption('It is not CSV file');
         }
@@ -57,7 +57,7 @@ class HelperUtility
         }
     }
 
-    public static function getWriter(InputInterface $input)
+    public function getWriter(InputInterface $input)
     {
         if ($input->getOption('test')) {
             $testWriter = [];
@@ -65,8 +65,10 @@ class HelperUtility
 
             return $writer;
         } else {
-            $writer = new DoctrineWriter(self::$em, 'AppBundle:Product', 'productCode');
+            $writer = new DoctrineWriter($this->em, 'AppBundle:Product', 'productCode');
+            $writer->setTruncate(false);
 
+            return $writer;
         }
     }
 
@@ -89,7 +91,7 @@ class HelperUtility
         /**
          * @var $metadata \Symfony\Component\Validator\Mapping\ClassMetadata
          * */
-        $metadata = self::$validator->getMetadataFor(new Product());
+        $metadata = $this->validator->getMetadataFor(new Product());
         foreach ($metadata->properties as $attribute => $propertyMetadata) {
             foreach ($propertyMetadata->getConstraints() as $constraint) {
                 $constraints[$attribute][] = $constraint;
