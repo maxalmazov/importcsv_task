@@ -81,6 +81,7 @@ class Product
      *
      * @Assert\NotBlank(message="Price should not be blank")
      * @Assert\Type(type="numeric", message="Price must be of type float")
+     * @Assert\LessThan(value=1000, message="Price should be less then 1000")
      *
      * @ORM\Column(name="price", type="float", options={"unsigned"=true})
      */

@@ -5,9 +5,9 @@ parameters:
 
 services:
     import.csv:
-        class: AppBundle\Services\ImportCSV
-        arguments: ["@service_container", "@doctrine.orm.entity_manager"]
+        class: AppBundle\Service\ImportService
+        arguments: ["@doctrine.orm.entity_manager", "@validator","@helper.utility" ]
 
-    map.utility:
-        class: AppBundle\Utility\MappingUtility
-        arguments: ["@validator", "@service_container"]
+    helper.utility:
+        class: AppBundle\Utility\HelperUtility
+        arguments: ["@validator","@doctrine.orm.entity_manager"]

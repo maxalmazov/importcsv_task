@@ -3,7 +3,7 @@
 namespace AppBundle\Command;
 
 use AppBundle\Exeption\FormatFileExeption;
-use AppBundle\Utility\ReaderUtility;
+use AppBundle\Utility\HelperUtility;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -51,7 +51,7 @@ class ImportCommand extends ContainerAwareCommand
     {
         $filename = $input->getArgument('filename');
         try {
-            $reader = ReaderUtility::getReader($filename);
+            $reader = HelperUtility::getReader($filename);
         } catch (FormatFileExeption $e) {
             $output->writeln('<error>'.$e->getMessage().'</error>');
 
@@ -62,7 +62,10 @@ class ImportCommand extends ContainerAwareCommand
             return;
         }
 
-        $util = $this->getContainer()->get('map.utility');
-        $util->getConstraints();
+
+        $uutil = $this->getContainer()->get('helper.utility');
+        $uutil->getConstraints();
+        $util2 = $this->getContainer()->get('import.csv');
+        $util2->import($reader);
     }
 }
