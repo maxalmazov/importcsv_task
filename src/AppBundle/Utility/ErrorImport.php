@@ -2,6 +2,10 @@
 
 namespace AppBundle\Utility;
 
+/**
+ * Class ErrorImport
+ * @package AppBundle\Utility
+ */
 class ErrorImport
 {
     private $productCode;
@@ -14,7 +18,7 @@ class ErrorImport
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getProductCode()
     {
@@ -22,7 +26,7 @@ class ErrorImport
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getMessage()
     {
@@ -30,7 +34,7 @@ class ErrorImport
     }
 
     /**
-     * @param mixed $message
+     * @param string $message
      */
     public function setMessage($message)
     {

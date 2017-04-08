@@ -14,16 +14,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface as Validator;
 
 class HelperUtility
 {
-
     private $validator;
+
     private $em;
 
-    /**
-     * HelperUtility constructor.
-     *
-     * @param $validator Validator
-     * @param $em EntityManager
-     */
     public function __construct(Validator $validator, EntityManager $em)
     {
         $this->validator = $validator;
@@ -88,9 +82,6 @@ class HelperUtility
     {
         $constraints = [];
 
-        /**
-         * @var $metadata \Symfony\Component\Validator\Mapping\ClassMetadata
-         * */
         $metadata = $this->validator->getMetadataFor(new Product());
         foreach ($metadata->properties as $attribute => $propertyMetadata) {
             foreach ($propertyMetadata->getConstraints() as $constraint) {

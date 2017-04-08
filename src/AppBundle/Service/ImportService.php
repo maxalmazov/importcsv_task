@@ -5,18 +5,14 @@
  use AppBundle\Utility\ErrorImport;
  use AppBundle\Utility\HelperUtility;
  use Ddeboer\DataImport\Reader;
- use Ddeboer\DataImport\Step\ValidatorStep;
  use Ddeboer\DataImport\Writer;
  use Ddeboer\DataImport\Step\MappingStep;
  use Ddeboer\DataImport\Step\ValueConverterStep;
+ use Ddeboer\DataImport\Step\ValidatorStep;
  use Ddeboer\DataImport\Step\FilterStep;
  use Ddeboer\DataImport\Workflow\StepAggregator as Workflow;
  use Doctrine\ORM\EntityManager;
- use AppBundle\Entity\Product;
- use function PHPSTORM_META\elementType;
  use Symfony\Component\Console\Output\OutputInterface;
- use Symfony\Component\Validator\Constraints as Assert;
- use Symfony\Component\DependencyInjection\ContainerInterface as Container;
  use Symfony\Component\Validator\Validator\ValidatorInterface as Validator;
 
  class ImportService
@@ -25,36 +21,18 @@
      const MIN_PRICE = 5;
      const MIN_STOCK = 10;
 
-     /**
-      * @var $em EntityManager
-      */
      private $em;
 
-     /**
-      * @var $validator Validator
-      */
      private $validator;
 
-     /**
-      * @var $map HelperUtility
-      */
      private $helper;
 
-     /**
-      * @var $errorsImport ErrorImport
-      */
      private $errorsImport = [];
 
      private $totalProcessed;
 
      private $successProcessed;
 
-     /**
-      * ImportService constructor.
-      * @param EntityManager $em
-      * @param Validator $validator
-      * @param HelperUtility $helper
-      */
      public function __construct(EntityManager $em, Validator $validator, HelperUtility $helper)
      {
          $this->em = $em;
@@ -62,7 +40,7 @@
          $this->helper = $helper;
      }
 
-     public function import(Reader $reader, Writer $writer, $output)
+     public function import(Reader $reader, Writer $writer, OutputInterface $output)
      {
          $mapping = new MappingStep($this->helper->getMapping());
 
@@ -93,10 +71,10 @@
          $workflow = new Workflow($reader);
          $workflow->setSkipItemOnFailure(true);
          $result = $workflow
-             ->addStep($mapping, 4)
-             ->addStep($converter, 3)
-             ->addStep($validate, 2)
              ->addStep($filter, 1)
+             ->addStep($validate, 2)
+             ->addStep($converter, 3)
+             ->addStep($mapping, 4)
              ->addWriter($writer)
              ->process($output);
          ;
@@ -104,6 +82,7 @@
          $this->totalProcessed = $result->getTotalProcessedCount() + count($reader->getErrors());
          $this->successProcessed = $result->getSuccessCount();
 
+         //Validation and filter errors
          if ($result->hasErrors()) {
              foreach ($result->getExceptions() as $exception) {
                  foreach ($exception->getViolations() as $violation) {
@@ -113,12 +92,19 @@
              }
          }
 
+         //Errors of incorrect formatting in CSV
          foreach ($reader->getErrors() as $invalidItem) {
              $error = new ErrorImport($invalidItem[0],'Invalid item in CSV file');
              $this->setError($error);
          }
      }
 
+     /**
+      * Add error to array $errorsImport or add message if error with this productCode already exist
+      *
+      * @param ErrorImport $error
+      * @return $this
+      */
      private function setError(ErrorImport $error)
      {
          if ($this->isErrorExist($error) instanceof ErrorImport) {
@@ -134,10 +120,7 @@
 
      private function isErrorExist($error)
      {
-         /**
-          * @var $error ErrorImport
-          * @var $errorImport ErrorImport
-          */
+
          foreach ($this->errorsImport as $errorImport) {
              if ($errorImport->getProductCode() === $error->getProductCode()) {
                  return $errorImport;
@@ -147,7 +130,7 @@
      }
 
      /**
-      * @return mixed
+      * @return int
       */
      public function getTotalProcessed()
      {
@@ -155,7 +138,7 @@
      }
 
      /**
-      * @return mixed
+      * @return int
       */
      public function getSuccessProcessed()
      {
@@ -163,7 +146,7 @@
      }
 
      /**
-      * @return ErrorImport
+      * @return array
       */
      public function getErrorsImport()
      {

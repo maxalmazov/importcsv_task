@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Product
+ * Product Entity
  *
  * @ORM\Table(name="tblProductData")
  * @ORM\HasLifecycleCallbacks()
@@ -54,6 +54,7 @@ class Product
 
     /**
      * @var \DateTime
+     *
      * @ORM\Column(name="createdAt", type="datetime", nullable=true)
      */
     private $createdAt;
@@ -90,6 +91,7 @@ class Product
 
     /**
      * @var \DateTime
+     *
      * @ORM\Column(name="stmTimestamp", type="datetime")
      */
     private $updatedAt;

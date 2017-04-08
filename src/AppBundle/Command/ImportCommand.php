@@ -4,7 +4,6 @@ namespace AppBundle\Command;
 
 use AppBundle\Exeption\FormatFileExeption;
 use AppBundle\Utility\ErrorImport;
-use AppBundle\Utility\HelperUtility;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -34,18 +33,19 @@ class ImportCommand extends ContainerAwareCommand
 
         $io = new SymfonyStyle($input,$output);
         $io->note(array(
-            'The file you upload must meet the following conditions:'
+            'The imported file must meet the following conditions:'
         ));
         $io->listing(array(
-            'The first column must consist of the product code in the format is "P****", where * is digits.',
-            'All items must be filled',
+            'The file extension must be "*.csv"',
+            'The first column must consist of the product code.',
+            'All fields must be filled',
         ));
         $io->confirm('Do you want to continue?');
 
         if (!($input->getArgument('filename'))) {
             $question = new Question('<question>Choose the file (write path to file):</question> ', null);
             $filename  = $helper->ask($input, $output, $question);
-            $input->setArgument('filename', $filename);
+            $input->setArgument('filename', $filename); var_dump(trim($input->getArgument('filename')));
         }
     }
 
@@ -80,8 +80,9 @@ class ImportCommand extends ContainerAwareCommand
          * @var $error ErrorImport
          */
         if ($input->getOption('detailed')) {
+            $output->writeln('<fg=red>Next item was not imported:</>');
             foreach ($import->getErrorsImport() as $error) {
-                $report = sprintf('<info>%s</info> - <comment>%s</comment>', $error->getProductCode(), $error->getMessage());
+                $report = sprintf('<info>%s</info> - %s', $error->getProductCode(), $error->getMessage());
                 $output->writeln($report);
             }
 
