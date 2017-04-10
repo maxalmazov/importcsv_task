@@ -67,7 +67,7 @@ class ImportCommand extends ContainerAwareCommand
         }
 
         $import = $this->getContainer()->get('import.csv');
-        $import->import($reader, $writer, $output);
+        $import->import($reader, $writer);
 
         $reportMessage = sprintf("\n".'Total processed: <info>%s</info> product. Imported: <info>%s</info> product. Fail: <info>%s</info>',
             $import->getTotalProcessed(),
