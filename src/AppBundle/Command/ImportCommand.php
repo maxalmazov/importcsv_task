@@ -45,7 +45,7 @@ class ImportCommand extends ContainerAwareCommand
         if (!($input->getArgument('filename'))) {
             $question = new Question('<question>Choose the file (write path to file):</question> ', null);
             $filename  = $helper->ask($input, $output, $question);
-            $input->setArgument('filename', $filename); var_dump(trim($input->getArgument('filename')));
+            $input->setArgument('filename', $filename);
         }
     }
 

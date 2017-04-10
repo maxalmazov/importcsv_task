@@ -12,7 +12,7 @@
  use Ddeboer\DataImport\Step\FilterStep;
  use Ddeboer\DataImport\Workflow\StepAggregator as Workflow;
  use Doctrine\ORM\EntityManager;
- use Symfony\Component\Console\Output\OutputInterface;
+ use Symfony\Component\Console\Output\ConsoleOutput;
  use Symfony\Component\Validator\Validator\ValidatorInterface as Validator;
 
  class ImportService
@@ -40,7 +40,7 @@
          $this->helper = $helper;
      }
 
-     public function import(Reader $reader, Writer $writer, OutputInterface $output)
+     public function import(Reader $reader, Writer $writer)
      {
          $mapping = new MappingStep($this->helper->getMapping());
 
@@ -68,6 +68,9 @@
          };
          $filter->add($priceAnStockfilter);
 
+         $consoleOutput = new ConsoleOutput();
+         $progressWriter = new Writer\ConsoleProgressWriter($consoleOutput, $reader);
+
          $workflow = new Workflow($reader);
          $workflow->setSkipItemOnFailure(true);
          $result = $workflow
@@ -76,7 +79,8 @@
              ->addStep($converter, 3)
              ->addStep($mapping, 4)
              ->addWriter($writer)
-             ->process($output);
+             ->addWriter($progressWriter)
+             ->process();
          ;
 
          $this->totalProcessed = $result->getTotalProcessedCount() + count($reader->getErrors());
